@@ -1,10 +1,10 @@
 namespace HID
 {
-	/// <summary>
-	/// Base class for report types. Simply wraps a byte buffer.
-	/// </summary>
-	public class Report
-	{
+    /// <summary>
+    /// Base class for report types. Simply wraps a byte buffer.
+    /// </summary>
+    public class Report
+    {
         /// <summary> Accessor for the raw byte buffer </summary>
         public byte[] Buffer;
 
@@ -17,5 +17,5 @@ namespace HID
         {
             Buffer = data;
         }
-	}
+    }
 }

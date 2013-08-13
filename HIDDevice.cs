@@ -7,14 +7,14 @@ using Microsoft.Win32.SafeHandles;
 
 namespace HID
 {
-	/// <summary> Generic HID Device - can be extended to customize functionality </summary>
+    /// <summary> Generic HID Device - can be extended to customize functionality </summary>
     public class HIDDevice : Win32Usb, IDisposable
     {
         public int ProductID { get; private set; }
         public int VendorID { get; private set; }
         public Guid DeviceClass { get; private set; }
-	    public int InputReportLength { get; private set; }
-	    public int OutputReportLength { get; private set; }
+        public int InputReportLength { get; private set; }
+        public int OutputReportLength { get; private set; }
 
         public EventHandler<HIDDeviceEventArgs> OnDataReceived = (sender, args) => { };
         public EventHandler<HIDDeviceEventArgs> OnDataSend = (sender, args) => { };
@@ -23,7 +23,7 @@ namespace HID
 
         private IntPtr _handle;
         private FileStream _mOFile;
-	    private static readonly List<HIDDevice> Devices = new List<HIDDevice>();
+        private static readonly List<HIDDevice> Devices = new List<HIDDevice>();
 
         public HIDDevice(int productID, int vendorID)
         {
@@ -92,10 +92,10 @@ namespace HID
             }
         }
 
-		/// <summary>
-		/// Kicks off an asynchronous read which completes when data is read or when the device
-		/// is disconnected. Uses a callback.
-		/// </summary>
+        /// <summary>
+        /// Kicks off an asynchronous read which completes when data is read or when the device
+        /// is disconnected. Uses a callback.
+        /// </summary>
         private void BeginAsyncRead()
         {
             if (_handle == IntPtr.Zero) return;
@@ -106,10 +106,10 @@ namespace HID
             _mOFile.BeginRead(arrInputReport, 0, InputReportLength, ReadCompleted, arrInputReport);
         }
 
-		/// <summary>
-		/// Callback for above. Care with this as it will be called on the background thread from the async read
-		/// </summary>
-		/// <param name="iResult">Async result parameter</param>
+        /// <summary>
+        /// Callback for above. Care with this as it will be called on the background thread from the async read
+        /// </summary>
+        /// <param name="iResult">Async result parameter</param>
         protected void ReadCompleted(IAsyncResult iResult)
         {
             if (_handle == IntPtr.Zero) return;
@@ -140,56 +140,56 @@ namespace HID
             }
         }
 
-		/// <summary>
-		/// Write an output report to the device.
-		/// </summary>
-		/// <param name="oOutRep">Output report to write</param>
+        /// <summary>
+        /// Write an output report to the device.
+        /// </summary>
+        /// <param name="oOutRep">Output report to write</param>
         protected void Write(Report oOutRep)
-		{
+        {
             if (_handle == IntPtr.Zero) return;
      
             _mOFile.Write(oOutRep.Buffer, 0, oOutRep.Buffer.Length);
-		}
-
-	    /// <summary>
-		/// Helper method to return the device path given a DeviceInterfaceData structure and an InfoSet handle.
-		/// Used in 'FindDevice' so check that method out to see how to get an InfoSet handle and a DeviceInterfaceData.
-		/// </summary>
-		/// <param name="hInfoSet">Handle to the InfoSet</param>
-		/// <param name="oInterface">DeviceInterfaceData structure</param>
-		/// <returns>The device path or null if there was some problem</returns>
-		private string GetDevicePath(IntPtr hInfoSet, ref DeviceInterfaceData oInterface)
-		{
-			uint nRequiredSize = 0;
-			// Get the device interface details
-			if (!SetupDiGetDeviceInterfaceDetail(hInfoSet, ref oInterface, IntPtr.Zero, 0, ref nRequiredSize, IntPtr.Zero))
-			{
-				var oDetail = new DeviceInterfaceDetailData {Size = Marshal.SizeOf(typeof (IntPtr)) == 8 ? 8 : 5};
-
-			    if (SetupDiGetDeviceInterfaceDetail(hInfoSet, ref oInterface, ref oDetail, nRequiredSize, ref nRequiredSize, IntPtr.Zero))
-				{
-					return oDetail.DevicePath;
-				}
-			}
-			return null;
-		}
+        }
 
         /// <summary>
-		/// Initialises the device
-		/// </summary>
-		/// <param name="strPath">Path to the device</param>
-		private void Initialize(string strPath)
-		{
-			// Create the file from the device path
+        /// Helper method to return the device path given a DeviceInterfaceData structure and an InfoSet handle.
+        /// Used in 'FindDevice' so check that method out to see how to get an InfoSet handle and a DeviceInterfaceData.
+        /// </summary>
+        /// <param name="hInfoSet">Handle to the InfoSet</param>
+        /// <param name="oInterface">DeviceInterfaceData structure</param>
+        /// <returns>The device path or null if there was some problem</returns>
+        private string GetDevicePath(IntPtr hInfoSet, ref DeviceInterfaceData oInterface)
+        {
+            uint nRequiredSize = 0;
+            // Get the device interface details
+            if (!SetupDiGetDeviceInterfaceDetail(hInfoSet, ref oInterface, IntPtr.Zero, 0, ref nRequiredSize, IntPtr.Zero))
+            {
+                var oDetail = new DeviceInterfaceDetailData {Size = Marshal.SizeOf(typeof (IntPtr)) == 8 ? 8 : 5};
+
+                if (SetupDiGetDeviceInterfaceDetail(hInfoSet, ref oInterface, ref oDetail, nRequiredSize, ref nRequiredSize, IntPtr.Zero))
+                {
+                    return oDetail.DevicePath;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Initialises the device
+        /// </summary>
+        /// <param name="strPath">Path to the device</param>
+        private void Initialize(string strPath)
+        {
+            // Create the file from the device path
             _handle = CreateFile(strPath, GENERIC_READ | GENERIC_WRITE, 0, IntPtr.Zero, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, IntPtr.Zero);
 
             if ( _handle == InvalidHandleValue)
             {
                 _handle = IntPtr.Zero;
-				throw HIDDeviceException.GenerateWithWinError("Failed to create device file");
+                throw HIDDeviceException.GenerateWithWinError("Failed to create device file");
             }
 
-		    IntPtr lpData;
+            IntPtr lpData;
 
             if (!HidD_GetPreparsedData(_handle, out lpData))
             {
@@ -197,16 +197,16 @@ namespace HID
             }
 
             HidCaps oCaps;
-            HidP_GetCaps(lpData, out oCaps);	// extract the device capabilities from the internal buffer
-            InputReportLength = oCaps.InputReportByteLength;	// get the input...
-            OutputReportLength = oCaps.OutputReportByteLength;	// ... and output report lengths
+            HidP_GetCaps(lpData, out oCaps);    // extract the device capabilities from the internal buffer
+            InputReportLength = oCaps.InputReportByteLength;    // get the input...
+            OutputReportLength = oCaps.OutputReportByteLength;    // ... and output report lengths
                 
             _mOFile = new FileStream(new SafeFileHandle(_handle, false), FileAccess.Read | FileAccess.Write, InputReportLength, true);
 
             BeginAsyncRead();
 
-			HidD_FreePreparsedData(ref lpData);	
-		}
+            HidD_FreePreparsedData(ref lpData);    
+        }
 
         protected bool IsPresent(int vendorID, int productID, out string devicePath)
         {
@@ -215,10 +215,10 @@ namespace HID
 
             
             // this gets a list of all HID devices currently connected to the computer (InfoSet)
-            var hInfoSet = SetupDiGetClassDevs(ref gHid, null, IntPtr.Zero, DIGCF_DEVICEINTERFACE | DIGCF_PRESENT);	
+            var hInfoSet = SetupDiGetClassDevs(ref gHid, null, IntPtr.Zero, DIGCF_DEVICEINTERFACE | DIGCF_PRESENT);    
 
             // build up a device interface data block
-            var oInterface = new DeviceInterfaceData();	
+            var oInterface = new DeviceInterfaceData();    
             oInterface.Size = Marshal.SizeOf(oInterface);
 
             // Now iterate through the InfoSet memory block assigned within Windows in the call to SetupDiGetClassDevs
@@ -226,21 +226,21 @@ namespace HID
             int nIndex = 0;
             
             // this gets the device interface information for a device at index 'nIndex' in the memory block
-            while (SetupDiEnumDeviceInterfaces(hInfoSet, 0, ref gHid, (uint)nIndex, ref oInterface))	
+            while (SetupDiEnumDeviceInterfaces(hInfoSet, 0, ref gHid, (uint)nIndex, ref oInterface))    
             {
                 // get the device path (see helper method 'GetDevicePath')
                 
                 devicePath = GetDevicePath(hInfoSet, ref oInterface);
 
                 // do a string search, if we find the VID/PID string then we found our device!
-                if (devicePath.IndexOf(strSearch, StringComparison.Ordinal) >= 0)	
+                if (devicePath.IndexOf(strSearch, StringComparison.Ordinal) >= 0)    
                 {
                     return true;
                 }
 
                  
                 // if we get here, we didn't find our device. So move on to the next one.
-                nIndex++;	
+                nIndex++;    
             }
 
             // Before we go, we have to free up the InfoSet memory reserved by SetupDiGetClassDevs
@@ -250,7 +250,7 @@ namespace HID
             devicePath = "";
 
             // oops, didn't find our device
-            return false;	
+            return false;    
         }
 
         public override bool Equals(object obj)
